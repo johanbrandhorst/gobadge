@@ -1,16 +1,13 @@
 package main
 
 import (
-	"image/color"
 	"machine"
 	"time"
 
 	"tinygo.org/x/drivers/lis3dh"
-
-	"tinygo.org/x/drivers/ws2812"
-
 	"tinygo.org/x/drivers/shifter"
 	"tinygo.org/x/drivers/st7735"
+	"tinygo.org/x/drivers/ws2812"
 )
 
 var display st7735.Device
@@ -18,24 +15,6 @@ var buttons shifter.Device
 var leds ws2812.Device
 var bzrPin machine.Pin
 var accel lis3dh.Device
-
-const (
-	BLACK = iota
-	WHITE
-	RED
-	SNAKE
-	TEXT
-)
-
-var colors = []color.RGBA{
-	color.RGBA{0, 0, 0, 255},
-	color.RGBA{255, 255, 255, 255},
-	color.RGBA{250, 0, 0, 255},
-	color.RGBA{0, 200, 0, 255},
-	color.RGBA{160, 160, 160, 255},
-}
-
-var snakeGame = NewSnakeGame()
 
 func main() {
 	machine.SPI1.Configure(machine.SPIConfig{
@@ -70,37 +49,7 @@ func main() {
 	speaker.High()
 
 	for {
-		switch menu() {
-		case 0:
-			Badge()
-			break
-		case 1:
-			snakeGame.Loop()
-			break
-		case 2:
-			Leds()
-			break
-		case 3:
-			Accel3D()
-			break
-		case 4:
-			Music()
-			break
-		default:
-			break
-		}
-		println("LOOP")
+		Badge()
 		time.Sleep(1 * time.Second)
 	}
-}
-
-func getRainbowRGB(i uint8) color.RGBA {
-	if i < 85 {
-		return color.RGBA{i * 3, 255 - i*3, 0, 255}
-	} else if i < 170 {
-		i -= 85
-		return color.RGBA{255 - i*3, 0, i * 3, 255}
-	}
-	i -= 170
-	return color.RGBA{0, i * 3, 255 - i*3, 255}
 }
