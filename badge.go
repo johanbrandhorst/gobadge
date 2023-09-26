@@ -18,49 +18,19 @@ const (
 	HEIGHT = 128
 )
 
-const (
-	logoDisplayTime = 10 * time.Second
-)
-
-var rainbow []color.RGBA
 var pressed uint8
-var quit bool
 
 func Badge() {
 	setCustomData()
-	quit = false
 	display.FillScreen(colors[BLACK])
-
-	rainbow = make([]color.RGBA, 256)
-	for i := 0; i < 256; i++ {
-		rainbow[i] = getRainbowRGB(uint8(i))
-	}
 
 	for {
 		logo()
-		if quit {
-			break
-		}
-		myNameIsRainbow(YourName)
-		if quit {
-			break
-		}
-		blinkyRainbow(YourTitleA1, YourTitleA2)
-		if quit {
-			break
-		}
-		scroll(YourMarqueeTop, YourMarqueeMiddle, YourMarqueeBottom)
-		if quit {
-			break
-		}
+		myNameIs(YourName)
+		blinky(YourTitleA1, YourTitleA2)
+		blinky(YourTitleB1, YourTitleB2)
+		blinky("Talk to me", "about Wasm")
 		QR(YourQRText)
-		if quit {
-			break
-		}
-		blinkyRainbow(YourTitleB1, YourTitleB2)
-		if quit {
-			break
-		}
 	}
 }
 
@@ -89,9 +59,10 @@ func myNameIs(name string) {
 	display.FillRectangle(r, HEIGHT-r-1, WIDTH-2*r-1, r+1, colors[RED])
 	display.FillRectangle(0, HEIGHT-2*r-1, WIDTH, r, colors[RED])
 
-	// top text : my NAME is
-	w32, _ := tinyfont.LineWidth(&freesans.Regular12pt7b, "my NAME is")
-	tinyfont.WriteLine(&display, &freesans.Regular12pt7b, (WIDTH-int16(w32))/2, 24, "my NAME is", colors[WHITE])
+	// top text
+	const topText = "My name is"
+	w32, _ := tinyfont.LineWidth(&freesans.Regular12pt7b, topText)
+	tinyfont.WriteLine(&display, &freesans.Regular12pt7b, (WIDTH-int16(w32))/2, 24, topText, colors[WHITE])
 
 	// middle text
 	w32, _ = tinyfont.LineWidth(&freesans.Bold9pt7b, name)
@@ -99,18 +70,12 @@ func myNameIs(name string) {
 
 	// gophers
 	tinyfont.WriteLineColors(&display, &gophers.Regular32pt, WIDTH-48, 110, "BE", []color.RGBA{getRainbowRGB(100), getRainbowRGB(200)})
-}
 
-func myNameIsRainbow(name string) {
-	myNameIs(name)
-
-	w32, _ := tinyfont.LineWidth(&freesans.Bold9pt7b, name)
-	for i := 0; i < 230; i++ {
-		tinyfont.WriteLineColors(&display, &freesans.Bold9pt7b, (WIDTH-int16(w32))/2, 72, name, rainbow[i:])
+	for i := 0; i < 300; i++ {
+		time.Sleep(20 * time.Millisecond)
 		pressed, _ = buttons.Read8Input()
 		if pressed&machine.BUTTON_SELECT_MASK > 0 {
-			quit = true
-			break
+			return
 		}
 	}
 }
@@ -121,73 +86,27 @@ func blinky(topline, bottomline string) {
 	// calculate the width of the text so we could center them later
 	w32top, _ := tinyfont.LineWidth(&freesans.Bold12pt7b, topline)
 	w32bottom, _ := tinyfont.LineWidth(&freesans.Bold12pt7b, bottomline)
-	for i := int16(0); i < 10; i++ {
+	for i := int16(0); i < 20; i++ {
 		// show black text
 		tinyfont.WriteLine(&display, &freesans.Bold12pt7b, (WIDTH-int16(w32top))/2, 50, topline, colors[BLACK])
 		tinyfont.WriteLine(&display, &freesans.Bold12pt7b, (WIDTH-int16(w32bottom))/2, 100, bottomline, colors[BLACK])
 
-		// repeat the other way around
-		tinyfont.WriteLine(&display, &freesans.Bold12pt7b, (WIDTH-int16(w32top))/2, 50, topline, colors[WHITE])
-		tinyfont.WriteLine(&display, &freesans.Bold12pt7b, (WIDTH-int16(w32bottom))/2, 100, bottomline, colors[WHITE])
-
 		pressed, _ = buttons.Read8Input()
 		if pressed&machine.BUTTON_SELECT_MASK > 0 {
-			quit = true
 			break
 		}
 	}
-}
-
-func blinkyRainbow(topline, bottomline string) {
-	display.FillScreen(colors[WHITE])
-
-	// calculate the width of the text so we could center them later
-	w32top, _ := tinyfont.LineWidth(&freesans.Bold12pt7b, topline)
-	w32bottom, _ := tinyfont.LineWidth(&freesans.Bold12pt7b, bottomline)
-	for i := int16(0); i < 20; i++ {
-		// show black text
-		tinyfont.WriteLine(&display, &freesans.Bold12pt7b, (WIDTH-int16(w32top))/2, 50, topline, getRainbowRGB(uint8(i*12)))
-		tinyfont.WriteLine(&display, &freesans.Bold12pt7b, (WIDTH-int16(w32bottom))/2, 100, bottomline, getRainbowRGB(uint8(i*12)))
-
-		pressed, _ = buttons.Read8Input()
-		if pressed&machine.BUTTON_SELECT_MASK > 0 {
-			quit = true
-			break
-		}
-	}
-}
-
-func scroll(topline, middleline, bottomline string) {
-	display.FillScreen(colors[WHITE])
-
-	// calculate the width of the text, so we could center them later
-	w32top, _ := tinyfont.LineWidth(&freesans.Bold12pt7b, topline)
-	w32middle, _ := tinyfont.LineWidth(&freesans.Bold12pt7b, middleline)
-	w32bottom, _ := tinyfont.LineWidth(&freesans.Bold12pt7b, bottomline)
-	tinyfont.WriteLine(&display, &freesans.Bold12pt7b, (WIDTH-int16(w32top))/2, 34, topline, getRainbowRGB(200))
-	tinyfont.WriteLine(&display, &freesans.Bold12pt7b, (WIDTH-int16(w32middle))/2, 60, middleline, getRainbowRGB(80))
-	tinyfont.WriteLine(&display, &freesans.Bold12pt7b, (WIDTH-int16(w32bottom))/2, 100, bottomline, getRainbowRGB(120))
-
-	display.SetScrollArea(0, 0)
-	for k := 0; k < 4; k++ {
-		for i := int16(159); i >= 0; i-- {
-
-			pressed, _ = buttons.Read8Input()
-			if pressed&machine.BUTTON_SELECT_MASK > 0 {
-				quit = true
-				break
-			}
-			display.SetScroll(i)
-			time.Sleep(10 * time.Millisecond)
-		}
-	}
-	display.SetScroll(0)
-	display.StopScroll()
 }
 
 func logo() {
 	display.FillRectangleWithBuffer(0, 0, WIDTH, HEIGHT, logoRGBA)
-	time.Sleep(logoDisplayTime)
+	for i := 0; i < 300; i++ {
+		time.Sleep(20 * time.Millisecond)
+		pressed, _ = buttons.Read8Input()
+		if pressed&machine.BUTTON_SELECT_MASK > 0 {
+			return
+		}
+	}
 }
 
 func QR(msg string) {
@@ -214,10 +133,12 @@ func QR(msg string) {
 		}
 	}
 
-	time.Sleep(logoDisplayTime)
-	pressed, _ = buttons.Read8Input()
-	if pressed&machine.BUTTON_SELECT_MASK > 0 {
-		quit = true
+	for i := 0; i < 300; i++ {
+		time.Sleep(20 * time.Millisecond)
+		pressed, _ = buttons.Read8Input()
+		if pressed&machine.BUTTON_SELECT_MASK > 0 {
+			return
+		}
 	}
 }
 

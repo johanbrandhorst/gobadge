@@ -1,8 +1,8 @@
 package main
 
 import (
+	"image/color"
 	"machine"
-	"time"
 
 	"tinygo.org/x/drivers/lis3dh"
 	"tinygo.org/x/drivers/shifter"
@@ -15,6 +15,22 @@ var buttons shifter.Device
 var leds ws2812.Device
 var bzrPin machine.Pin
 var accel lis3dh.Device
+
+const (
+	BLACK = iota
+	WHITE
+	RED
+	SNAKE
+	TEXT
+)
+
+var colors = []color.RGBA{
+	color.RGBA{0, 0, 0, 255},
+	color.RGBA{255, 255, 255, 255},
+	color.RGBA{250, 0, 0, 255},
+	color.RGBA{0, 200, 0, 255},
+	color.RGBA{160, 160, 160, 255},
+}
 
 func main() {
 	machine.SPI1.Configure(machine.SPIConfig{
@@ -48,8 +64,16 @@ func main() {
 	speaker.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	speaker.High()
 
-	for {
-		Badge()
-		time.Sleep(1 * time.Second)
+	Badge()
+}
+
+func getRainbowRGB(i uint8) color.RGBA {
+	if i < 85 {
+		return color.RGBA{i * 3, 255 - i*3, 0, 255}
+	} else if i < 170 {
+		i -= 85
+		return color.RGBA{255 - i*3, 0, i * 3, 255}
 	}
+	i -= 170
+	return color.RGBA{0, i * 3, 255 - i*3, 255}
 }
