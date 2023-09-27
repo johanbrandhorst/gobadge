@@ -31,6 +31,13 @@ flash-fosdem: prepare-fosdem flash
 prepare-boundary:
 	go run cmd/main.go -conf=boundary
 
+flash-boundary: prepare-boundary flash
+
+prepare-hashicorp:
+	go run cmd/main.go -conf=hashicorp
+
+flash-hashicorp: prepare-hashicorp flash
+
 flash:
 	sudo udisksctl mount -b /dev/sdb
 	sudo tinygo build -o /run/media/root/PYBADGEBOOT/firmware.uf2 -target gobadge.json -ldflags="-X main.YourName='Johan' -X main.YourTitleA1='Boundary' -X main.YourTitleA2='at HashiCorp' -X main.YourQRText='https://jbrandhorst.com' -X main.YourTitleB1='I made this' -X main.YourTitleB2='using TinyGo'" .

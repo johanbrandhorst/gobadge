@@ -16,6 +16,7 @@ const (
 	kubeconEU23       = "./cmd/assets/kubecon-eu-2023.jpg"
 	tinygoLogo        = "./cmd/assets/tinygo.jpg"
 	boundaryLogo      = "./cmd/assets/boundary.jpg"
+	hashicorpLogo     = "./cmd/assets/hashicorp.jpg"
 )
 
 func main() {
@@ -42,5 +43,6 @@ func confs() map[string]string {
 		"tinygo":      tinygoLogo,
 		"kubeconeu23": kubeconEU23,
 		"boundary":    boundaryLogo,
+		"hashicorp":   hashicorpLogo,
 	}
 }
